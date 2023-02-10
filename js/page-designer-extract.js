@@ -253,10 +253,10 @@ async function getImageAssets(imagePaths) {
     var image = await fetch(baseURL + urlPath, {
       //mode: 'no-cors',
       method: "GET",
-      headers: {
-        //'Content-Type': 'image/jpeg',
-        //'Accept': 'image/*'
-      },
+      // headers: {
+      //   //'Content-Type': 'image/jpeg',
+      //   //'Accept': 'image/*'
+      // },
     });
     console.log(
       "https://edge.disstg.commercecloud.salesforce.com/dw/image/v2/BDCR_STG/on/demandware.static/-/Sites-NGArmani-Library/default" +
