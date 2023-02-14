@@ -1,18 +1,26 @@
-//imports
-//import {JSZip} from 'jszip'
-//import { JSZip } from "jszip.js";
-
 const inputElement = document.getElementById("library-input");
 const form = document.getElementById("form-pd");
+const checkBox = document.getElementById("checkbox-input");
+const baseUrlInput = document.getElementById("baseurl-input");
 
 form.addEventListener("submit", handleUploadedFile, false);
+
+checkBox.addEventListener("click", function(){
+  if(checkBox.checked){
+    document.getElementById("baseurl-input").style.display = 'block';
+    document.getElementById("baseurl-input").setAttribute("required", "");
+  }else{
+    document.getElementById("baseurl-input").style.display = 'none';
+    document.getElementById("baseurl-input").removeAttribute("required");
+  }
+
+}, false)
 
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
   event.preventDefault();
-  const isDownloadImagesChecked = document.getElementById(
-    "download-images-checkbox"
-  ).checked;
+  const isDownloadImagesChecked = document.getElementById("checkbox-input").checked;
+
   const textArea = document.getElementById("pageids-textarea");
   const pageIDs = textArea.value
     .trim()
@@ -27,7 +35,7 @@ function handleUploadedFile(event) {
   document.getElementById("app").classList.add("loading");
   getXMLDoc(library).then((xml) => {
     if (xml && xml instanceof XMLDocument) {
-      getPDAssets(pageIDs, xml, fileName);
+      getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked);
     } else {
       addMessage(`File "${fileName}" can not be parsed.`, "error");
     }
@@ -84,7 +92,7 @@ function getRelatedAssets(asset) {
   return relatedAssets;
 }
 
-function getPDAssets(pageIDs, xml, fileName) {
+function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   const xmlEncoding = '<?xml version="1.0" encoding="UTF-8"?>\n';
   const libraryNode = xml.getElementsByTagName("library")[0];
   if (!libraryNode) {
@@ -131,8 +139,10 @@ function getPDAssets(pageIDs, xml, fileName) {
   library.appendChild(document.createTextNode("\n\n"));
 
   if (pageFound) {
-    getImageAssets(getImagePaths(library.outerHTML));
-    //generateZIP()
+    //console.log(isDownloadImagesChecked, "checker")
+    if(isDownloadImagesChecked){
+      getImageAssets(getImagePaths(library.outerHTML));
+    }
     download(fileName, xmlEncoding + library.outerHTML);
     addMessage(`Library xml is successfully filtered.`, "success");
   } else {
@@ -155,7 +165,7 @@ function download(filename, text) {
   element.style.display = "none";
   document.body.appendChild(element);
 
-  element.click();
+  //element.click();
 
   document.body.removeChild(element);
 }
@@ -189,47 +199,16 @@ function getImagePaths(filteredFile) {
   var parser = new DOMParser();
   var xmlDoc = parser.parseFromString(filteredFile, "text/xml");
 
-  var xpath = `/*[local-name()='library']/*[local-name()='content']/*[local-name()='data']`;
-  var result;
   let imagePaths = [];
-  if (xmlDoc.evaluate) {
-    var nodes = xmlDoc.evaluate(
-      xpath,
-      xmlDoc,
-      null,
-      XPathResult.ANY_TYPE,
-      null
-    );
-    var nextElement = nodes.iterateNext();
+  let child = xmlDoc.childNodes
+  child.forEach(element => {
+    console.log(element)
+    let dataContentText = element.textContent;
+    imagePaths = (dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi));
+  });
 
-    while (nextElement) {
-      result = nextElement;
-      let dataTagContent = result.childNodes;
+  console.log(imagePaths, "paths")
 
-      for (const dataContent of dataTagContent) {
-        let dataContentText = dataContent.textContent;
-
-        //check if node(text) has the image, ctaImage, or imageMobile value - data node contains an image path
-        if (
-          dataContentText.includes(`"ctaImage" : {`) ||
-          dataContentText.includes(`"imageMobile" : {`) ||
-          dataContentText.includes(`"image" : {`)
-        ) {
-          const keys = ["ctaImage", "imageMobile", "image"];
-          //convert data in text to an object - easier to get the path
-          let dataObject = JSON.parse(dataContentText);
-
-          //store image path and metadata in imagePaths
-          keys.map((key) => {
-            if (key in dataObject && dataObject[key] !== null) {
-              imagePaths.push(dataObject[key]);
-            }
-          });
-        }
-      }
-      nextElement = nodes.iterateNext();
-    }
-  }
   return imagePaths;
 }
 
@@ -237,30 +216,29 @@ async function getImageAssets(imagePaths) {
   var count = 0;
   var zip = new JSZip();
   var img = zip.folder("images");
-  const baseURL =
-    "https://edge.disstg.commercecloud.salesforce.com/dw/image/v2/BDCR_STG/on/demandware.static/-/Sites-NGArmani-Library/default";
+  const baseURL = baseUrlInput.value
 
-  for (let value of imagePaths) {
-    // console.log(value, "val")
-    let urlPath = value.path;
-    console.log(urlPath, "urlPath")
+  //console.log(baseURL, "bassseee")
 
-    let filename = value.path.substring(value.path.lastIndexOf("/") + 1);
+  for (let imagePath of imagePaths) {
+
+    let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
 
     //UNCOMMENT HERE!!
     var zipFilename = "images_bundle1.zip";
     // we will download these images in zip file
-    var image = await fetch(baseURL + urlPath, {
-      //mode: 'no-cors',
+    var image = await fetch("https://edge.disstg.commercecloud.salesforce.com/dw/image/v2/BDCR_STG/on/demandware.static/-/Sites-NGArmani-Library/default/landing-pages/lip-maestro-satin/v4-temp-2.jpg");
+    var image = await fetch(baseURL + imagePath, {
+       mode: 'no-cors',
       method: "GET",
       // headers: {
       //   //'Content-Type': 'image/jpeg',
-      //   //'Accept': 'image/*'
+      //   'Accept': 'image/*'
       // },
     });
     console.log(
-      "https://edge.disstg.commercecloud.salesforce.com/dw/image/v2/BDCR_STG/on/demandware.static/-/Sites-NGArmani-Library/default" +
-        urlPath,
+      baseURL +
+       imagePath,
       "url here"
     );
     var imageBlog = await image.blob();

@@ -1,13 +1,12 @@
 <?php
-header('Access-Control-Allow-Origin: *');
 // Initialize the session
 session_start();
  
 // Check if the user is logged in, if not then redirect him to login page
-if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
-    header("location: /");
-    exit;
-}
+// if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
+//     header("location: /");
+//     exit;
+// }
 ?>
 <!DOCTYPE html>
 <html>
@@ -68,8 +67,12 @@ if(!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true){
             <textarea name="pageids" id="pageids-textarea" placeholder="page1-id, page2-id, page3-id" required>lip-maestro-satin</textarea>
           </div>
           <div>
-            <input type="checkbox" id="download-images-checkbox" name="isDownload" />
-            <label for="download-images-checkbox">Download Images in the XML?</label>
+            <!-- <label for="baseurl-input">Base URL</label> -->
+            <input type="text" name="baseURL" id="baseurl-input" placeholder="Base URL Link" style="display:none;">
+          </div>
+          <div>
+            <input type="checkbox" id="checkbox-input" name="isDownload" />
+            <label for="checkbox-input">Download Images in the XML?</label>
           </div>
           <div class="form-actions" id="button-submit">
             <button class="button-convert">Convert and download</button>
