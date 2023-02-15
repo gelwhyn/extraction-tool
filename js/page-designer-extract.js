@@ -212,41 +212,156 @@ function getImagePaths(filteredFile) {
   return imagePaths;
 }
 
+async function fetchImage(imageURL, filename, filetype){
+  await fetch(imageURL, {
+    mode: 'no-cors',
+    method: "get",
+    // headers: {
+    //   'Content-Type': 'image/jpeg',
+    // //   'Accept': 'image/*'
+    // },
+  }).then(response => {
+    // const imageBlob = new Blob([response], {
+    //   type: "image/" + filetype
+    // })
+    // console.log(imageBlob, "imageblob")
+    return response;
+    // const imageBlob = new Blob([response], {
+    //   type: "image/" + filetype
+    // })
+    // console.log(imageBlob, "inside fetimg")
+    // return imageBlob;
+    // await response.blob()
+    // .then(imageBlob => {
+    //   console.log(Blob(imageBlob), "blob")
+    //   return imageBlob;
+    // }).catch(error => console.log(error, "error"))
+    //console.log(await response.blob(), "res")
+  }).catch(error => console.log(error, "error"));
+}
+
+async function getImageBlob(imageFetched, filetype){
+  // await imageFetched.blob()
+  //   .then(imageBlob => {
+  //     return imageBlob;
+  //   }).catch(error => console.log(error, "error "))
+  const imageBlob = new Blob([imageFetched], {
+    type: "image/" + filetype
+  })
+  return imageBlob;
+}
+
 async function getImageAssets(imagePaths) {
   var count = 0;
   var zip = new JSZip();
   var img = zip.folder("images");
   const baseURL = baseUrlInput.value
+  let imageBlobArray = [];
 
   //console.log(baseURL, "bassseee")
+
+//   imagePaths.forEach(async function(imagePath){
+//     let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
+//     let fileExt = filename.split('.').pop();
+//     const imageURL = `${baseURL}${imagePath}`
+
+//     await fetchImage(imageURL, filename, fileExt).then(val => console.log(val, "hi"));
+//     console.log(image, "imageee")
+//     //   let imageFile = new File([image], filename, {type: fileExt});
+//     //   console.log(imageFile, "imageFile")
+//     //   img.file(filename, imageFile)
+
+//     // if(image){
+//     //   let imageBlob = image.blob();
+//     //   console.log(imageBlob)
+//     // }
+//     //whole(imageURL, filename)
+//     // var image = await fetch(imgURL);
+//     // var imageBlog = await image.blob();
+
+
+//     // await fetch(`${baseURL}${imagePath}`, {
+//     //   mode: 'no-cors',
+//     //   method: "get",
+//     //   // headers: {
+//     //   //   'Content-Type': 'image/jpeg',
+//     //   // //   'Accept': 'image/*'
+//     //   // },
+//     // }).then(async response => {
+//     //   console.log(await response.blob(), "res")
+//     // }).catch(error => console.log(error, "error ", error.status));
+//     console.log(
+//       baseURL +
+//        imagePath,
+//       "url here"
+//     );
+//     // console.log(count, "count");
+//   })
+// console.log(imageBlobArray, "array")
+//   if(imageBlobArray.length == imagePaths.length){
+//     imageBlobArray.map((imageBlob, i) => {
+//       let filename = imagePaths[i].substring(imagePaths[i].lastIndexOf("/") + 1);
+//       img.file(imageBlob, filename)
+//       count++;
+//       console.log(count, "count");
+//     })
+//   }
 
   for (let imagePath of imagePaths) {
 
     let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
+    let fileExt = filename.split('.').pop();
 
     //UNCOMMENT HERE!!
     var zipFilename = "images_bundle1.zip";
     // we will download these images in zip file
-    var image = await fetch("https://edge.disstg.commercecloud.salesforce.com/dw/image/v2/BDCR_STG/on/demandware.static/-/Sites-NGArmani-Library/default/landing-pages/lip-maestro-satin/v4-temp-2.jpg");
-    var image = await fetch(baseURL + imagePath, {
-       mode: 'no-cors',
-      method: "GET",
-      // headers: {
-      //   //'Content-Type': 'image/jpeg',
-      //   'Accept': 'image/*'
-      // },
-    });
+    // var image = await fetch(document.getElementById("image"));
+    var image = await fetchImage(baseURL + imagePath, filename, fileExt)
+    var imageBlob = await getImageBlob(image, fileExt)
+    // var image = await fetch(baseURL + imagePath, {
+    //   mode: 'no-cors',
+    //   method: "get",
+    //   headers: {
+    //     // 'Content-Type': 'image/jpeg',
+    //   //   'Accept': 'image/*'
+    //   },
+    // }).catch(error => console.log(error, "error"));
+    
     console.log(
       baseURL +
        imagePath,
       "url here"
     );
-    var imageBlog = await image.blob();
+ 
+      console.log(image, "image fetch")
+      // const imageBlob = new Blob([image], {
+      //   type: "image/" + fileExt
+      // })
+      console.log(imageBlob, "blob")
+      // var imageBlob = await image.blob().then((result) => {
+      //   console.log(result, "res")
+      //   return result
+      // })
+
+
+    // console.log(imageBlob, "ImageBlob here")
+    // var imageFile = new File([imageBlob], filename, {type: fileExt});
+
+    // .then(img => {
+    //   var element = document.createElement("img");
+    //   element.setAttribute(
+    //     "src",
+    //     URL.createObjectURL(img)
+    //   );
+    //   console.log("created blob")
+    // }).catch(error => console.log(error, "error in blob"));
     // loading a file and add it in a zip file
-    img.file(filename, imageBlog, { binary: true });
+    img.file(filename, imageBlob);
     count++;
+    // console.log(img.file(filename, imageFile), "Image File from jsZIP here")
+    // console.log(imageFile, "Image File here")
     console.log(count, "count");
-    console.log(imagePaths.length, "length");
+  //   // console.log(imagePaths.length, "length");
 
     if (count == imagePaths.length) {
       console.log("entered here");
