@@ -139,8 +139,16 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   library.appendChild(document.createTextNode("\n\n"));
 
   if (pageFound) {
-    //console.log(isDownloadImagesChecked, "checker")
+    console.log(isDownloadImagesChecked, "checker")
+    var images = [
+      "https://upload.wikimedia.org/wikipedia/commons/9/91/JavaScript_screenshot.png",
+      "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/296b1d59-04bf-46e4-a449-6815a222dbf5?rule=hw545",
+      "https://lets-code-more.s3.amazonaws.com/static/assets/imgs/theme/COMPUTER.jpg",
+      "https://lets-code-more.s3.amazonaws.com/media/blog_images/javascript.jpg",
+    ];
     if(isDownloadImagesChecked){
+      // getImageAssets(images);
+
       getImageAssets(getImagePaths(library.outerHTML));
     }
     download(fileName, xmlEncoding + library.outerHTML);
@@ -165,7 +173,7 @@ function download(filename, text) {
   element.style.display = "none";
   document.body.appendChild(element);
 
-  //element.click();
+  element.click();
 
   document.body.removeChild(element);
 }
@@ -198,6 +206,7 @@ function addMessage(message, type) {
 function getImagePaths(filteredFile) {
   var parser = new DOMParser();
   var xmlDoc = parser.parseFromString(filteredFile, "text/xml");
+  const baseURL = baseUrlInput.value
 
   let imagePaths = [];
   let child = xmlDoc.childNodes
@@ -212,43 +221,23 @@ function getImagePaths(filteredFile) {
   return imagePaths;
 }
 
-async function fetchImage(imageURL, filename, filetype){
-  await fetch(imageURL, {
-    mode: 'no-cors',
+async function fetchImage(imageURL){
+  return await fetch(imageURL, {
+    //uncomment mode to try with no-cors
+    // mode: 'no-cors',
     method: "get",
     // headers: {
     //   'Content-Type': 'image/jpeg',
     // //   'Accept': 'image/*'
     // },
-  }).then(response => {
-    // const imageBlob = new Blob([response], {
-    //   type: "image/" + filetype
-    // })
-    // console.log(imageBlob, "imageblob")
-    return response;
-    // const imageBlob = new Blob([response], {
-    //   type: "image/" + filetype
-    // })
-    // console.log(imageBlob, "inside fetimg")
-    // return imageBlob;
-    // await response.blob()
-    // .then(imageBlob => {
-    //   console.log(Blob(imageBlob), "blob")
-    //   return imageBlob;
-    // }).catch(error => console.log(error, "error"))
-    //console.log(await response.blob(), "res")
-  }).catch(error => console.log(error, "error"));
+  })
 }
 
-async function getImageBlob(imageFetched, filetype){
-  // await imageFetched.blob()
-  //   .then(imageBlob => {
-  //     return imageBlob;
-  //   }).catch(error => console.log(error, "error "))
-  const imageBlob = new Blob([imageFetched], {
-    type: "image/" + filetype
-  })
-  return imageBlob;
+async function getImageBlob(imageFetched){
+  return await imageFetched.blob()
+  // const imageBlob = new Blob([imageFetched], {
+  //   type: "image/" + filetype
+  // })
 }
 
 async function getImageAssets(imagePaths) {
@@ -256,118 +245,173 @@ async function getImageAssets(imagePaths) {
   var zip = new JSZip();
   var img = zip.folder("images");
   const baseURL = baseUrlInput.value
-  let imageBlobArray = [];
+  const baseUrlEndsWithSlash = baseURL.endsWith("/") 
 
-  //console.log(baseURL, "bassseee")
+  // for (let imagePath of imagePaths) {
 
-//   imagePaths.forEach(async function(imagePath){
-//     let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
-//     let fileExt = filename.split('.').pop();
-//     const imageURL = `${baseURL}${imagePath}`
-
-//     await fetchImage(imageURL, filename, fileExt).then(val => console.log(val, "hi"));
-//     console.log(image, "imageee")
-//     //   let imageFile = new File([image], filename, {type: fileExt});
-//     //   console.log(imageFile, "imageFile")
-//     //   img.file(filename, imageFile)
-
-//     // if(image){
-//     //   let imageBlob = image.blob();
-//     //   console.log(imageBlob)
-//     // }
-//     //whole(imageURL, filename)
-//     // var image = await fetch(imgURL);
-//     // var imageBlog = await image.blob();
-
-
-//     // await fetch(`${baseURL}${imagePath}`, {
-//     //   mode: 'no-cors',
-//     //   method: "get",
-//     //   // headers: {
-//     //   //   'Content-Type': 'image/jpeg',
-//     //   // //   'Accept': 'image/*'
-//     //   // },
-//     // }).then(async response => {
-//     //   console.log(await response.blob(), "res")
-//     // }).catch(error => console.log(error, "error ", error.status));
-//     console.log(
-//       baseURL +
-//        imagePath,
-//       "url here"
-//     );
-//     // console.log(count, "count");
-//   })
-// console.log(imageBlobArray, "array")
-//   if(imageBlobArray.length == imagePaths.length){
-//     imageBlobArray.map((imageBlob, i) => {
-//       let filename = imagePaths[i].substring(imagePaths[i].lastIndexOf("/") + 1);
-//       img.file(imageBlob, filename)
-//       count++;
-//       console.log(count, "count");
-//     })
-//   }
-
-  for (let imagePath of imagePaths) {
-
-    let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
-    let fileExt = filename.split('.').pop();
+  //   let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
+  //   let fileExt = filename.split('.').pop();
 
     //UNCOMMENT HERE!!
-    var zipFilename = "images_bundle1.zip";
-    // we will download these images in zip file
-    // var image = await fetch(document.getElementById("image"));
-    var image = await fetchImage(baseURL + imagePath, filename, fileExt)
-    var imageBlob = await getImageBlob(image, fileExt)
-    // var image = await fetch(baseURL + imagePath, {
-    //   mode: 'no-cors',
-    //   method: "get",
-    //   headers: {
-    //     // 'Content-Type': 'image/jpeg',
-    //   //   'Accept': 'image/*'
-    //   },
-    // }).catch(error => console.log(error, "error"));
+    // var zipFilename = "images_bundle1.zip";
+    // // we will download these images in zip file
+    // const image = fetch (imagePath)
+    // image.then((response)=> {
+    //   console.log(response, "response here")
+    // })
+    // var imageBlob = image.blob()
     
-    console.log(
-      baseURL +
-       imagePath,
-      "url here"
-    );
+    // console.log(
+    //   baseURL +
+    //    imagePath,
+    //   "url here"
+    // );
  
-      console.log(image, "image fetch")
-      // const imageBlob = new Blob([image], {
-      //   type: "image/" + fileExt
-      // })
-      console.log(imageBlob, "blob")
-      // var imageBlob = await image.blob().then((result) => {
-      //   console.log(result, "res")
-      //   return result
-      // })
+    //   console.log(image, "image fetch")
+    //   console.log(imageBlob, "blob")
+  
+    // img.file(filename, imageBlob);
+    // count++;
+    // console.log(count, "count");
 
+    // if (count == imagePaths.length) {
+    //   console.log("entered here");
+    //   zip.generateAsync({ type: "blob" }).then(function (content) {
+    //     saveAs(content, zipFilename);
+    //   });
+    // }
+  // }
+var zipFilename = "images_bundle2.zip";
+  imagePaths.forEach(async function (imgURL, i) {
 
-    // console.log(imageBlob, "ImageBlob here")
-    // var imageFile = new File([imageBlob], filename, {type: fileExt});
-
-    // .then(img => {
-    //   var element = document.createElement("img");
-    //   element.setAttribute(
-    //     "src",
-    //     URL.createObjectURL(img)
-    //   );
-    //   console.log("created blob")
-    // }).catch(error => console.log(error, "error in blob"));
-    // loading a file and add it in a zip file
-    img.file(filename, imageBlob);
-    count++;
-    // console.log(img.file(filename, imageFile), "Image File from jsZIP here")
-    // console.log(imageFile, "Image File here")
-    console.log(count, "count");
-  //   // console.log(imagePaths.length, "length");
-
-    if (count == imagePaths.length) {
-      console.log("entered here");
-      zip.generateAsync({ type: "blob" }).then(function (content) {
-        saveAs(content, zipFilename);
-      });
+    if(baseUrlEndsWithSlash){
+      console.log("entered first if")
+      if(imgURL.startsWith("/")){
+        console.log("entered second if")
+        imgURL = imgURL.substring(1)
+        console.log(imgURL, "here")
+      }
+    }else{
+      if(!imgURL.startsWith("/")){
+        imgURL = "/" + imgURL
     }
   }
+
+    
+    console.log(baseURL + imgURL, "hello link")
+    //trial 1
+    // console.log(i);
+    // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+    // var image = fetch(imgURL);
+    // // var image = await fetch(baseURL + imgURL,);
+
+    // //image.then(response => console.log(response))
+    // console.log(image, "image")
+    // var imageBlob = await image.blob();
+    // var img = zip.folder("images");
+    // // loading a file and add it in a zip file
+    // img.file(filename, imageBlob, { binary: true });
+    // count++;
+    // if (count == imagePaths.length) {
+    //   zip.generateAsync({ type: "blob" }).then(function (content) {
+    //     saveAs(content, zipFilename);
+    //   });
+    // }
+
+    //trial 2 - tested with yung publicly accessible images but encounters the same output (zipped file with 0 size)
+    // const fetchResponse = fetchImage(imgURL).then(async response => {
+    // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+  
+    // console.log(await response.blob(), "resp")
+    // const imageBlob = getImageBlob(response).then((imageBlob) => {
+    //   console.log(imageBlob, "imgblob")
+    //   var img = zip.folder("images");
+    //   // loading a file and add it in a zip file
+    //   img.file(filename, imageBlob, { binary: true });
+    //   count++;
+            
+    //   console.log(count, "count")
+    //   if (count == imagePaths.length) {
+    //     zip.generateAsync({ type: "blob" }).then(function (content) {
+    //       saveAs(content, zipFilename);
+    //     });
+    //   }
+    // })
+  // })
+
+    //trial 3 - works with the publicly accessible image paths, (but if may "no-cors") it wont work.
+    const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
+      let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+      let filetype = filename.split('.').pop();
+
+      const imageBlob = await response.blob()
+      console.log(imageBlob, "imgblob")
+      var img = zip.folder("images");
+      // loading a file and add it in a zip file
+      img.file(filename, imageBlob, { binary: true });
+      count++;
+            
+      console.log(count, "count")
+      if (count == imagePaths.length) {
+        zip.generateAsync({ type: "blob" }).then(function (content) {
+          saveAs(content, zipFilename);
+        });
+      }
+    });
+
+    //trial 4 - open link/images in new tab (no download)
+      // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+      // let element = document.createElement('a')
+      // element.setAttribute("href", baseURL + imgURL);
+
+      // element.setAttribute("download", filename);
+      // element.setAttribute("target", "_blank");
+
+      // document.getElementById("trial-messages").appendChild(element)
+      // element.click()
+
+    //trial 5 - using file() to build the response
+    //   const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
+    //   let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+    //   let filetype = filename.split('.').pop();
+
+    //   const imageBlob = new File([response], filename, {type: `image/${filetype}`})
+    //   imageBlob.src = baseURL + imgURL
+    //   console.log(imageBlob, "imgblob")
+    //   // document.getElementById("trial-messages").appendChild(imageBlob)
+    //   var img = zip.folder("images");
+    //   // loading a file and add it in a zip file
+    //   img.file(filename, imageBlob, { binary: true });
+    //   count++;
+            
+    //   console.log(count, "count")
+    //   if (count == imagePaths.length) {
+    //     zip.generateAsync({ type: "blob" }).then(function (content) {
+    //       saveAs(content, zipFilename);
+    //     });
+    //   }
+    // });
+
+    //trial 5 - using file() to build the response
+    // const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
+    //   let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+    //   let filetype = filename.split('.').pop();
+
+    //   const imageBlob = new File([response], filename, {type: `image/${filetype}`})
+    //   imageBlob.src = baseURL + imgURL
+    //   console.log(imageBlob, "imgblob")
+    //   // document.getElementById("trial-messages").appendChild(imageBlob)
+    //   var img = zip.folder("images");
+    //   // loading a file and add it in a zip file
+    //   img.file(filename, imageBlob, { binary: true });
+    //   count++;
+            
+    //   console.log(count, "count")
+    //   if (count == imagePaths.length) {
+    //     zip.generateAsync({ type: "blob" }).then(function (content) {
+    //       saveAs(content, zipFilename);
+    //     });
+    //   }
+    // });
+})
 }

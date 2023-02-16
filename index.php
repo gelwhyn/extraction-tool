@@ -18,6 +18,9 @@
         exit(0);
     }
 
+    header('Access-Control-Allow-Origin: *');
+  // header('Content-type: application/json');
+
     // echo "You have CORS!";
 ?>
 <?php
