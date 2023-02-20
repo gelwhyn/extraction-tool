@@ -19,7 +19,7 @@ checkBox.addEventListener("click", function(){
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
   event.preventDefault();
-  const isDownloadImagesChecked = document.getElementById("checkbox-input").checked;
+  let isDownloadImagesChecked = document.getElementById("checkbox-input").checked;
 
   const textArea = document.getElementById("pageids-textarea");
   const pageIDs = textArea.value
@@ -31,7 +31,6 @@ function handleUploadedFile(event) {
   const library =
     inputElement.files && inputElement.files.length && inputElement.files[0];
   const fileName = library.name;
-  document.getElementById("trial-messages").innerText = library.name;
   document.getElementById("app").classList.add("loading");
   getXMLDoc(library).then((xml) => {
     if (xml && xml instanceof XMLDocument) {
@@ -116,8 +115,6 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
         let asset = assets.pop();
         let relatedAssets = getRelatedAssets(asset);
         library.appendChild(document.createTextNode("\n\n    "));
-        // console.log(library, "libraryaSSET")
-        // console.log(Object.keys(asset), "keys")
         library.appendChild(asset);
         relatedAssets.forEach((id) => {
           let currentAsset = getAsset(id, xml);
@@ -139,24 +136,24 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   library.appendChild(document.createTextNode("\n\n"));
 
   if (pageFound) {
-    console.log(isDownloadImagesChecked, "checker")
-    var images = [
-      "https://upload.wikimedia.org/wikipedia/commons/9/91/JavaScript_screenshot.png",
-      "https://images.milanuncios.com/api/v1/ma-ad-media-pro/images/296b1d59-04bf-46e4-a449-6815a222dbf5?rule=hw545",
-      "https://lets-code-more.s3.amazonaws.com/static/assets/imgs/theme/COMPUTER.jpg",
-      "https://lets-code-more.s3.amazonaws.com/media/blog_images/javascript.jpg",
-    ];
     if(isDownloadImagesChecked){
-      // getImageAssets(images);
-
-      getImageAssets(getImagePaths(library.outerHTML));
+      document.getElementById("app").classList.add("loading");
+      let images = getImagePaths(library.outerHTML)
+      if(images.length == 0){
+        addMessage("No image path found in filtered XML File.", "error");
+        document.getElementById("app").classList.remove("loading");
+      }else{
+        getImageAssets(images, fileName.split('.')[0]);
+      }
     }
     download(fileName, xmlEncoding + library.outerHTML);
     addMessage(`Library xml is successfully filtered.`, "success");
   } else {
     addMessage("No pages found.", "error");
   }
-  document.getElementById("app").classList.remove("loading");
+  if(!isDownloadImagesChecked){
+    document.getElementById("app").classList.remove("loading");
+  }
 }
 
 function download(filename, text) {
@@ -167,8 +164,6 @@ function download(filename, text) {
   );
   element.setAttribute("download", filename);
   element.setAttribute("target", "_blank");
-
-  console.log(filename, "FILENAME");
 
   element.style.display = "none";
   document.body.appendChild(element);
@@ -203,6 +198,13 @@ function addMessage(message, type) {
   document.getElementById("info-messages").appendChild(notification);
 }
 
+function cleanImagePath(imgURL){
+  let cleanPath = imgURL.split("&quot;")
+ return cleanPath.filter(val => {
+    return val.startsWith("https://") && val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)
+  })
+}
+
 function getImagePaths(filteredFile) {
   var parser = new DOMParser();
   var xmlDoc = parser.parseFromString(filteredFile, "text/xml");
@@ -211,14 +213,25 @@ function getImagePaths(filteredFile) {
   let imagePaths = [];
   let child = xmlDoc.childNodes
   child.forEach(element => {
-    console.log(element)
+    // console.log(element)
     let dataContentText = element.textContent;
     imagePaths = (dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi));
   });
 
-  console.log(imagePaths, "paths")
+  //for checking! uncomment
+  // imagePaths.forEach(path => {
+  //   if(path.includes("&quot;")){
+  //     console.log(cleanImagePath(path), "meron")
+  //     path = cleanImagePath(path)
+  //    if( path.length > 0 ){
+  //       path.forEach(val => imagePaths.push(val))
+  //    }
+  //   }
+  // })
 
-  return imagePaths;
+  // console.log(imagePaths, "paths")
+
+  return [...new Set(imagePaths)];
 }
 
 async function fetchImage(imageURL){
@@ -233,185 +246,84 @@ async function fetchImage(imageURL){
   })
 }
 
-async function getImageBlob(imageFetched){
-  return await imageFetched.blob()
-  // const imageBlob = new Blob([imageFetched], {
-  //   type: "image/" + filetype
-  // })
-}
+async function getImageAssets(imagePaths, xmlFilename) {
+  // console.log(imagePaths, "paths")
+  let count = 0;
+  let countImageFailedFetch = 0;
 
-async function getImageAssets(imagePaths) {
-  var count = 0;
-  var zip = new JSZip();
-  var img = zip.folder("images");
+  let zip = new JSZip();
+  let img = zip.folder("images");
+  let zipFilename = `images_${xmlFilename}.zip`;
+
   const baseURL = baseUrlInput.value
-  const baseUrlEndsWithSlash = baseURL.endsWith("/") 
+  const baseUrlEndsWithSlash = baseURL.endsWith("/")
 
-  // for (let imagePath of imagePaths) {
+  try{
+    imagePaths.forEach(async function (imgURL, i) {
+      let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
+      let isLinkComplete = imgURL.startsWith("https://")
+      //let filetype = filename.split('.').pop();
+      //comment this when trying links that are already publicly accessible
+      //checks if user input baseURL ends with / or not
+      // if not, it adds a / in front of the image url that doesn't start with /
+      // if yes, it removes the / from the image url that starts with /
 
-  //   let filename = imagePath.substring(imagePath.lastIndexOf("/") + 1);
-  //   let fileExt = filename.split('.').pop();
-
-    //UNCOMMENT HERE!!
-    // var zipFilename = "images_bundle1.zip";
-    // // we will download these images in zip file
-    // const image = fetch (imagePath)
-    // image.then((response)=> {
-    //   console.log(response, "response here")
-    // })
-    // var imageBlob = image.blob()
-    
-    // console.log(
-    //   baseURL +
-    //    imagePath,
-    //   "url here"
-    // );
- 
-    //   console.log(image, "image fetch")
-    //   console.log(imageBlob, "blob")
-  
-    // img.file(filename, imageBlob);
-    // count++;
-    // console.log(count, "count");
-
-    // if (count == imagePaths.length) {
-    //   console.log("entered here");
-    //   zip.generateAsync({ type: "blob" }).then(function (content) {
-    //     saveAs(content, zipFilename);
-    //   });
-    // }
-  // }
-var zipFilename = "images_bundle2.zip";
-  imagePaths.forEach(async function (imgURL, i) {
-
-    if(baseUrlEndsWithSlash){
-      console.log("entered first if")
-      if(imgURL.startsWith("/")){
-        console.log("entered second if")
-        imgURL = imgURL.substring(1)
-        console.log(imgURL, "here")
+      if(baseUrlEndsWithSlash && !isLinkComplete){
+        if(imgURL.startsWith("/")){
+          imgURL = imgURL.substring(1)
+        }
+      }else if(!baseUrlEndsWithSlash && !isLinkComplete){
+        if(!imgURL.startsWith("/")){
+          imgURL = "/" + imgURL
+        }
       }
-    }else{
-      if(!imgURL.startsWith("/")){
-        imgURL = "/" + imgURL
+  
+      const fetchResponse = fetchImage(imgURL.startsWith("https://") ? imgURL : baseURL + imgURL)
+        .then(async response => {
+          if(response.status == 200){
+            const imageBlob = await response.blob()
+            var img = zip.folder("images");
+            // loading a file and add it in a zip file
+            img.file(filename, imageBlob, { binary: true });
+            count++;
+          }else{
+            //count how many images that can't be downloaded
+            countImageFailedFetch++
+            //uncomment here if error message should be printed for each file that cannot be downloaded
+            // addMessage(
+            //   `Image "${filename}" is not found. Skipping..`,
+            //   "warning"
+            // );
+          }
+          if(count == 0 && i == imagePaths.length-1){
+            console.log(count, i, imagePaths.length)
+            addMessage(
+              `Images cannot be downloaded. Please verify your base URL link.`,
+              "error"
+            );
+            document.getElementById("app").classList.remove("loading");
+          }else if (count+countImageFailedFetch == imagePaths.length && count != 0) {
+            zip.generateAsync({ type: "blob" }).then(function (content) {
+              saveAs(content, zipFilename);
+              addMessage(
+                `${count}/${imagePaths.length} images in filtered xml file was successfully downloaded.`,
+                "success"
+              );
+              if(countImageFailedFetch > 0){ //comment this if displaying warning messages for each file (that cannot be downloaded) is better
+                addMessage(
+                  `Failed to download ${countImageFailedFetch} images.`,
+                  "warning"
+                );
+              }
+              document.getElementById("app").classList.remove("loading");
+            });
+          }
+        })
+      })
+    }catch(error){
+      addMessage(
+        `Images cannot be downloaded. Please verify your base URL link.`,
+        "error"
+      );
     }
   }
-
-    
-    console.log(baseURL + imgURL, "hello link")
-    //trial 1
-    // console.log(i);
-    // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-    // var image = fetch(imgURL);
-    // // var image = await fetch(baseURL + imgURL,);
-
-    // //image.then(response => console.log(response))
-    // console.log(image, "image")
-    // var imageBlob = await image.blob();
-    // var img = zip.folder("images");
-    // // loading a file and add it in a zip file
-    // img.file(filename, imageBlob, { binary: true });
-    // count++;
-    // if (count == imagePaths.length) {
-    //   zip.generateAsync({ type: "blob" }).then(function (content) {
-    //     saveAs(content, zipFilename);
-    //   });
-    // }
-
-    //trial 2 - tested with yung publicly accessible images but encounters the same output (zipped file with 0 size)
-    // const fetchResponse = fetchImage(imgURL).then(async response => {
-    // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-  
-    // console.log(await response.blob(), "resp")
-    // const imageBlob = getImageBlob(response).then((imageBlob) => {
-    //   console.log(imageBlob, "imgblob")
-    //   var img = zip.folder("images");
-    //   // loading a file and add it in a zip file
-    //   img.file(filename, imageBlob, { binary: true });
-    //   count++;
-            
-    //   console.log(count, "count")
-    //   if (count == imagePaths.length) {
-    //     zip.generateAsync({ type: "blob" }).then(function (content) {
-    //       saveAs(content, zipFilename);
-    //     });
-    //   }
-    // })
-  // })
-
-    //trial 3 - works with the publicly accessible image paths, (but if may "no-cors") it wont work.
-    const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
-      let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-      let filetype = filename.split('.').pop();
-
-      const imageBlob = await response.blob()
-      console.log(imageBlob, "imgblob")
-      var img = zip.folder("images");
-      // loading a file and add it in a zip file
-      img.file(filename, imageBlob, { binary: true });
-      count++;
-            
-      console.log(count, "count")
-      if (count == imagePaths.length) {
-        zip.generateAsync({ type: "blob" }).then(function (content) {
-          saveAs(content, zipFilename);
-        });
-      }
-    });
-
-    //trial 4 - open link/images in new tab (no download)
-      // let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-      // let element = document.createElement('a')
-      // element.setAttribute("href", baseURL + imgURL);
-
-      // element.setAttribute("download", filename);
-      // element.setAttribute("target", "_blank");
-
-      // document.getElementById("trial-messages").appendChild(element)
-      // element.click()
-
-    //trial 5 - using file() to build the response
-    //   const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
-    //   let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-    //   let filetype = filename.split('.').pop();
-
-    //   const imageBlob = new File([response], filename, {type: `image/${filetype}`})
-    //   imageBlob.src = baseURL + imgURL
-    //   console.log(imageBlob, "imgblob")
-    //   // document.getElementById("trial-messages").appendChild(imageBlob)
-    //   var img = zip.folder("images");
-    //   // loading a file and add it in a zip file
-    //   img.file(filename, imageBlob, { binary: true });
-    //   count++;
-            
-    //   console.log(count, "count")
-    //   if (count == imagePaths.length) {
-    //     zip.generateAsync({ type: "blob" }).then(function (content) {
-    //       saveAs(content, zipFilename);
-    //     });
-    //   }
-    // });
-
-    //trial 5 - using file() to build the response
-    // const fetchResponse = fetchImage(baseURL + imgURL).then(async response => {
-    //   let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-    //   let filetype = filename.split('.').pop();
-
-    //   const imageBlob = new File([response], filename, {type: `image/${filetype}`})
-    //   imageBlob.src = baseURL + imgURL
-    //   console.log(imageBlob, "imgblob")
-    //   // document.getElementById("trial-messages").appendChild(imageBlob)
-    //   var img = zip.folder("images");
-    //   // loading a file and add it in a zip file
-    //   img.file(filename, imageBlob, { binary: true });
-    //   count++;
-            
-    //   console.log(count, "count")
-    //   if (count == imagePaths.length) {
-    //     zip.generateAsync({ type: "blob" }).then(function (content) {
-    //       saveAs(content, zipFilename);
-    //     });
-    //   }
-    // });
-})
-}

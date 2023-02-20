@@ -107,7 +107,6 @@ session_start();
           <div class="loadingspinner"></div>
         </div>
         <div id="info-messages"></div>
-        <div id="trial-messages">hghg</div>
       </div>
     </div>
     <!--END OF CONTENT-->
