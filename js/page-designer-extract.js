@@ -5,21 +5,25 @@ const baseUrlInput = document.getElementById("baseurl-input");
 
 form.addEventListener("submit", handleUploadedFile, false);
 
-checkBox.addEventListener("click", function(){
-  if(checkBox.checked){
-    document.getElementById("baseurl-input").style.display = 'block';
-    document.getElementById("baseurl-input").setAttribute("required", "");
-  }else{
-    document.getElementById("baseurl-input").style.display = 'none';
-    document.getElementById("baseurl-input").removeAttribute("required");
-  }
-
-}, false)
+checkBox.addEventListener(
+  "click",
+  function () {
+    if (checkBox.checked) {
+      document.getElementById("baseurl-input").style.display = "block";
+      document.getElementById("baseurl-input").setAttribute("required", "");
+    } else {
+      document.getElementById("baseurl-input").style.display = "none";
+      document.getElementById("baseurl-input").removeAttribute("required");
+    }
+  },
+  false
+);
 
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
   event.preventDefault();
-  let isDownloadImagesChecked = document.getElementById("checkbox-input").checked;
+  let isDownloadImagesChecked =
+    document.getElementById("checkbox-input").checked;
 
   const textArea = document.getElementById("pageids-textarea");
   const pageIDs = textArea.value
@@ -136,14 +140,14 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   library.appendChild(document.createTextNode("\n\n"));
 
   if (pageFound) {
-    if(isDownloadImagesChecked){
+    if (isDownloadImagesChecked) {
       document.getElementById("app").classList.add("loading");
-      let images = getImagePaths(library.outerHTML)
-      if(images.length == 0){
+      let images = getImagePaths(library.outerHTML);
+      if (images.length == 0) {
         addMessage("No image path found in filtered XML File.", "error");
         document.getElementById("app").classList.remove("loading");
-      }else{
-        getImageAssets(images, fileName.split('.')[0]);
+      } else {
+        getImageAssets(images, fileName.split(".")[0]);
       }
     }
     download(fileName, xmlEncoding + library.outerHTML);
@@ -151,7 +155,7 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   } else {
     addMessage("No pages found.", "error");
   }
-  if(!isDownloadImagesChecked){
+  if (!isDownloadImagesChecked || !pageFound) {
     document.getElementById("app").classList.remove("loading");
   }
 }
@@ -198,43 +202,57 @@ function addMessage(message, type) {
   document.getElementById("info-messages").appendChild(notification);
 }
 
-function cleanImagePath(imgURL){
-  let cleanPath = imgURL.split("&quot;")
- return cleanPath.filter(val => {
-    return val.startsWith("https://") && val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)
-  })
+function cleanImagePath(imgURL) {
+  let cleanPath = imgURL.split("&quot;");
+  return cleanPath.filter((val) => {
+    return (
+      val.startsWith("https://") &&
+      val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)
+    );
+  });
 }
 
 function getImagePaths(filteredFile) {
   var parser = new DOMParser();
   var xmlDoc = parser.parseFromString(filteredFile, "text/xml");
-  const baseURL = baseUrlInput.value
+  const baseURL = baseUrlInput.value;
 
   let imagePaths = [];
-  let child = xmlDoc.childNodes
-  child.forEach(element => {
+  let child = xmlDoc.childNodes;
+  child.forEach((element) => {
     // console.log(element)
     let dataContentText = element.textContent;
-    imagePaths = (dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi));
+    imagePaths = dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi);
   });
 
   //for checking! uncomment
-  // imagePaths.forEach(path => {
-  //   if(path.includes("&quot;")){
-  //     console.log(cleanImagePath(path), "meron")
-  //     path = cleanImagePath(path)
-  //    if( path.length > 0 ){
-  //       path.forEach(val => imagePaths.push(val))
-  //    }
-  //   }
-  // })
-
+  imagePaths.map((path, i) => {
+    if (path.includes("&quot;")) {
+      path = cleanImagePath(path);
+      if (path.length > 0) {
+        path.forEach((val, i) => {
+          if (val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)) {
+            imagePaths.push(val);
+          }
+        });
+      }
+    }
+  });
   // console.log(imagePaths, "paths")
 
-  return [...new Set(imagePaths)];
+  return [
+    ...new Set(
+      imagePaths.filter((val) => {
+        return (
+          val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi) &&
+          !val.includes("&quot;")
+        );
+      })
+    ),
+  ];
 }
 
-async function fetchImage(imageURL){
+async function fetchImage(imageURL) {
   return await fetch(imageURL, {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
@@ -243,11 +261,11 @@ async function fetchImage(imageURL){
     //   'Content-Type': 'image/jpeg',
     // //   'Accept': 'image/*'
     // },
-  })
+  });
 }
 
 async function getImageAssets(imagePaths, xmlFilename) {
-  // console.log(imagePaths, "paths")
+  console.log(imagePaths, "paths reals");
   let count = 0;
   let countImageFailedFetch = 0;
 
@@ -255,75 +273,87 @@ async function getImageAssets(imagePaths, xmlFilename) {
   let img = zip.folder("images");
   let zipFilename = `images_${xmlFilename}.zip`;
 
-  const baseURL = baseUrlInput.value
-  const baseUrlEndsWithSlash = baseURL.endsWith("/")
+  const baseURL = baseUrlInput.value;
+  const baseUrlEndsWithSlash = baseURL.endsWith("/");
 
-  try{
+  try {
     imagePaths.forEach(async function (imgURL, i) {
       let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-      let isLinkComplete = imgURL.startsWith("https://")
+      // let path = imgURL.split("/");
+
+      let isLinkComplete = imgURL.startsWith("https://");
       //let filetype = filename.split('.').pop();
       //comment this when trying links that are already publicly accessible
       //checks if user input baseURL ends with / or not
       // if not, it adds a / in front of the image url that doesn't start with /
       // if yes, it removes the / from the image url that starts with /
 
-      if(baseUrlEndsWithSlash && !isLinkComplete){
-        if(imgURL.startsWith("/")){
-          imgURL = imgURL.substring(1)
+      if (baseUrlEndsWithSlash && !isLinkComplete) {
+        if (imgURL.startsWith("/")) {
+          imgURL = imgURL.substring(1);
         }
-      }else if(!baseUrlEndsWithSlash && !isLinkComplete){
-        if(!imgURL.startsWith("/")){
-          imgURL = "/" + imgURL
+      } else if (!baseUrlEndsWithSlash && !isLinkComplete) {
+        if (!imgURL.startsWith("/")) {
+          imgURL = "/" + imgURL;
         }
       }
-  
-      const fetchResponse = fetchImage(imgURL.startsWith("https://") ? imgURL : baseURL + imgURL)
-        .then(async response => {
-          if(response.status == 200){
-            const imageBlob = await response.blob()
-            var img = zip.folder("images");
-            // loading a file and add it in a zip file
-            img.file(filename, imageBlob, { binary: true });
-            count++;
-          }else{
-            //count how many images that can't be downloaded
-            countImageFailedFetch++
-            //uncomment here if error message should be printed for each file that cannot be downloaded
-            // addMessage(
-            //   `Image "${filename}" is not found. Skipping..`,
-            //   "warning"
-            // );
-          }
-          if(count == 0 && i == imagePaths.length-1){
-            console.log(count, i, imagePaths.length)
+
+      const fetchResponse = fetchImage(
+        imgURL.startsWith("https://") ? imgURL : baseURL + imgURL
+      ).then(async (response) => {
+        if (response.status == 200) {
+          const imageBlob = await response.blob();
+          const path = imgURL.substring(0, imgURL.lastIndexOf("/"));
+          
+          //images in different folder (according sa path) -- to be tested pa po
+          var img = zip.folder(imgURL.startsWith("/") ? `images/${path}` : `images/${path}`)
+
+          // var img = zip.folder("images");
+          // loading a file and add it in a zip file
+          img.file(filename, imageBlob, { binary: true });
+          count++;
+        } else {
+          //count how many images that can't be downloaded
+          countImageFailedFetch++;
+          //uncomment here if error message should be printed for each file that cannot be downloaded
+          // addMessage(
+          //   `Image "${filename}" is not found. Skipping..`,
+          //   "warning"
+          // );
+        }
+        if (count == 0 && i == imagePaths.length - 1) {
+          console.log(count, i, imagePaths.length);
+          addMessage(
+            `Images cannot be downloaded. Please verify your base URL link.`,
+            "error"
+          );
+          document.getElementById("app").classList.remove("loading");
+        } else if (
+          count + countImageFailedFetch == imagePaths.length &&
+          count != 0
+        ) {
+          zip.generateAsync({ type: "blob" }).then(function (content) {
+            saveAs(content, zipFilename);
             addMessage(
-              `Images cannot be downloaded. Please verify your base URL link.`,
-              "error"
+              `${count}/${imagePaths.length} images in filtered xml file was successfully downloaded.`,
+              "success"
             );
-            document.getElementById("app").classList.remove("loading");
-          }else if (count+countImageFailedFetch == imagePaths.length && count != 0) {
-            zip.generateAsync({ type: "blob" }).then(function (content) {
-              saveAs(content, zipFilename);
+            if (countImageFailedFetch > 0) {
+              //comment this if displaying warning messages for each file (that cannot be downloaded) is better
               addMessage(
-                `${count}/${imagePaths.length} images in filtered xml file was successfully downloaded.`,
-                "success"
+                `Failed to download ${countImageFailedFetch} images.`,
+                "warning"
               );
-              if(countImageFailedFetch > 0){ //comment this if displaying warning messages for each file (that cannot be downloaded) is better
-                addMessage(
-                  `Failed to download ${countImageFailedFetch} images.`,
-                  "warning"
-                );
-              }
-              document.getElementById("app").classList.remove("loading");
-            });
-          }
-        })
-      })
-    }catch(error){
-      addMessage(
-        `Images cannot be downloaded. Please verify your base URL link.`,
-        "error"
-      );
-    }
+            }
+            document.getElementById("app").classList.remove("loading");
+          });
+        }
+      });
+    });
+  } catch (error) {
+    addMessage(
+      `Images cannot be downloaded. Please verify your base URL link.`,
+      "error"
+    );
   }
+}
