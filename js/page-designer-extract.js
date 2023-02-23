@@ -141,8 +141,8 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
 
   if (pageFound) {
     if (isDownloadImagesChecked) {
-      document.getElementById("app").classList.add("loading");
       let images = getImagePaths(library.outerHTML);
+      console.log(images, "image here")
       if (images.length == 0) {
         addMessage("No image path found in filtered XML File.", "error");
         document.getElementById("app").classList.remove("loading");
@@ -215,41 +215,40 @@ function cleanImagePath(imgURL) {
 function getImagePaths(filteredFile) {
   var parser = new DOMParser();
   var xmlDoc = parser.parseFromString(filteredFile, "text/xml");
-  const baseURL = baseUrlInput.value;
 
   let imagePaths = [];
   let child = xmlDoc.childNodes;
   child.forEach((element) => {
-    // console.log(element)
     let dataContentText = element.textContent;
     imagePaths = dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi);
   });
 
-  //for checking! uncomment
-  imagePaths.map((path, i) => {
-    if (path.includes("&quot;")) {
-      path = cleanImagePath(path);
-      if (path.length > 0) {
-        path.forEach((val, i) => {
-          if (val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)) {
+  // console.log("imagePaths", imagePaths);
+  if (imagePaths) {
+    //checks and refilters extracted image paths for &quot; - image links that starts with https:// (image path/link was extracted with unnecessary texts)
+    imagePaths.map((path, i) => {
+      if (path.includes("&quot;")) {
+        path = cleanImagePath(path);
+        if (path.length > 0) {
+          path.forEach((val, i) => {
             imagePaths.push(val);
-          }
-        });
+          });
+        }
       }
-    }
-  });
-  // console.log(imagePaths, "paths")
-
-  return [
-    ...new Set(
-      imagePaths.filter((val) => {
-        return (
-          val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi) &&
-          !val.includes("&quot;")
-        );
-      })
-    ),
-  ];
+    });
+    //returns a set of the extracted image path/link (no duplicates)
+    return [
+      ...new Set(
+        imagePaths.filter((val) => {
+          return (
+            val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi) &&
+            !val.includes("&quot;")
+          );
+        })
+      ),
+    ];
+  }
+  return []
 }
 
 async function fetchImage(imageURL) {
@@ -257,20 +256,15 @@ async function fetchImage(imageURL) {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
     method: "get",
-    // headers: {
-    //   'Content-Type': 'image/jpeg',
-    // //   'Accept': 'image/*'
-    // },
   });
 }
 
 async function getImageAssets(imagePaths, xmlFilename) {
-  console.log(imagePaths, "paths reals");
+  // console.log(imagePaths, "paths reals");
   let count = 0;
   let countImageFailedFetch = 0;
 
   let zip = new JSZip();
-  let img = zip.folder("images");
   let zipFilename = `images_${xmlFilename}.zip`;
 
   const baseURL = baseUrlInput.value;
@@ -279,15 +273,11 @@ async function getImageAssets(imagePaths, xmlFilename) {
   try {
     imagePaths.forEach(async function (imgURL, i) {
       let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-      // let path = imgURL.split("/");
-
       let isLinkComplete = imgURL.startsWith("https://");
-      //let filetype = filename.split('.').pop();
-      //comment this when trying links that are already publicly accessible
-      //checks if user input baseURL ends with / or not
-      // if not, it adds a / in front of the image url that doesn't start with /
-      // if yes, it removes the / from the image url that starts with /
+      // let filetype = filename.split('.').pop();
 
+      //checks if user input baseURL ends with / or not
+      // if not, it adds a / in front of the image url that doesn't start with / || if yes, it removes the / from the image url that starts with /
       if (baseUrlEndsWithSlash && !isLinkComplete) {
         if (imgURL.startsWith("/")) {
           imgURL = imgURL.substring(1);
@@ -304,11 +294,16 @@ async function getImageAssets(imagePaths, xmlFilename) {
         if (response.status == 200) {
           const imageBlob = await response.blob();
           const path = imgURL.substring(0, imgURL.lastIndexOf("/"));
-          
-          //images in different folder (according sa path) -- to be tested pa po
-          var img = zip.folder(imgURL.startsWith("/") ? `images/${path}` : `images/${path}`)
 
-          // var img = zip.folder("images");
+          //store images in different folder (according sa path)
+          var img = zip.folder(
+            imgURL.startsWith("/")
+              ? `images${path}`
+              : path.includes("https://")
+              ? path.replace("https://", "images/")
+              : `images/${path}`
+          );
+
           // loading a file and add it in a zip file
           img.file(filename, imageBlob, { binary: true });
           count++;
@@ -322,15 +317,13 @@ async function getImageAssets(imagePaths, xmlFilename) {
           // );
         }
         if (count == 0 && i == imagePaths.length - 1) {
-          console.log(count, i, imagePaths.length);
           addMessage(
             `Images cannot be downloaded. Please verify your base URL link.`,
             "error"
           );
-          document.getElementById("app").classList.remove("loading");
         } else if (
-          count + countImageFailedFetch == imagePaths.length &&
-          count != 0
+          count != 0 &&
+          count + countImageFailedFetch == imagePaths.length
         ) {
           zip.generateAsync({ type: "blob" }).then(function (content) {
             saveAs(content, zipFilename);
@@ -341,13 +334,13 @@ async function getImageAssets(imagePaths, xmlFilename) {
             if (countImageFailedFetch > 0) {
               //comment this if displaying warning messages for each file (that cannot be downloaded) is better
               addMessage(
-                `Failed to download ${countImageFailedFetch} images.`,
+                `An error occured. Failed to download ${countImageFailedFetch} images.`,
                 "warning"
               );
             }
-            document.getElementById("app").classList.remove("loading");
           });
         }
+        document.getElementById("app").classList.remove("loading");
       });
     });
   } catch (error) {
