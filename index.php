@@ -98,6 +98,10 @@ session_start();
           <div>
             <input type="checkbox" id="checkbox-input" name="isDownload" />
             <label for="checkbox-input">Download Images in the XML?</label>
+            <div class="tooltip">
+              <img loading="lazy" src="img/question-icon.png" alt="question icon" height="auto" width="auto" style="width: 80%;" />
+              <span class="tooltiptext">Make sure that the image paths in the xml file is configured correctly (no spaces)</span>
+            </div>
           </div>
           <div class="form-actions" id="button-submit">
             <button class="button-convert">Convert and download</button>
@@ -142,9 +146,5 @@ session_start();
         <script src="js/dtw-preloading.js"></script>
         <script type="module" src="js/jszip.js"></script>
         <script type="module" src="js/filesaver.js"></script>
-        <!-- sample changes here -->
-
-        <!-- <script src="js/jszip.min.js"></script> -->
-        <!-- <script type="module" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.js"></script> -->
   </body>
 </html>

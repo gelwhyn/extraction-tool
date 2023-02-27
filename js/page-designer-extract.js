@@ -206,7 +206,7 @@ function cleanImagePath(imgURL) {
   let cleanPath = imgURL.split("&quot;");
   return cleanPath.filter((val) => {
     return (
-      val.startsWith("https://") &&
+      (val.startsWith("https://") || val.startsWith("http://")) &&
       val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi)
     );
   });
@@ -273,7 +273,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
   try {
     imagePaths.forEach(async function (imgURL, i) {
       let filename = imgURL.substring(imgURL.lastIndexOf("/") + 1);
-      let isLinkComplete = imgURL.startsWith("https://");
+      let isLinkComplete = imgURL.startsWith("https://") || imgURL.startsWith("http://");
       // let filetype = filename.split('.').pop();
 
       //checks if user input baseURL ends with / or not
@@ -289,7 +289,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
       }
 
       const fetchResponse = fetchImage(
-        imgURL.startsWith("https://") ? imgURL : baseURL + imgURL
+        imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL
       ).then(async (response) => {
         if (response.status == 200) {
           const imageBlob = await response.blob();
@@ -299,8 +299,8 @@ async function getImageAssets(imagePaths, xmlFilename) {
           var img = zip.folder(
             imgURL.startsWith("/")
               ? `images${path}`
-              : path.includes("https://")
-              ? path.replace("https://", "images/")
+              : path.includes("https://") || imgURL.startsWith("http://")
+              ? path.replace(/https?:\/\//g, "images/")
               : `images/${path}`
           );
 
