@@ -233,7 +233,7 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   if (pageFound) {
     if (isDownloadImagesChecked) {
       let images = getImagePaths(library.outerHTML);
-      console.log(images, "image here")
+      // console.log(images, "image here")
       if (images.length == 0) {
         addMessage("No image path found in filtered XML File.", "error");
         document.getElementById("app").classList.remove("loading");
@@ -314,7 +314,6 @@ function getImagePaths(filteredFile) {
     imagePaths = dataContentText.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi);
   });
 
-  // console.log("imagePaths", imagePaths);
   if (imagePaths) {
     //checks and refilters extracted image paths for &quot; - image links that starts with https:// (image path/link was extracted with unnecessary texts)
     imagePaths.map((path, i) => {
@@ -327,13 +326,6 @@ function getImagePaths(filteredFile) {
         }
       }
     });
-
-    // console.log(        imagePaths.filter((val) => {
-    //   return (
-    //     val.match(/[^"'<>\n\t\s]+\.(?:png|jpe?g|gif)\b/gi) &&
-    //     !val.includes("&quot;")
-    //   );
-    // }), "with duplicates")
 
     //returns a set of the extracted image path/link (no duplicates)
     return [
@@ -438,7 +430,6 @@ async function getImageAssets(imagePaths, xmlFilename) {
                 "warning"
               );
             }
-            console.log("went here")
             document.getElementById("app").classList.remove("loading");
           });
         }

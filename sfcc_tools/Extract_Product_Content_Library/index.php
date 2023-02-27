@@ -81,10 +81,10 @@ session_start();
           <div>
             <input type="checkbox" id="checkbox-input" name="isDownload" />
             <label for="checkbox-input">Download Images in the XML?</label>
-            <!-- <div class="tooltip">
+            <div class="tooltip">
               <img loading="lazy" src="img/question-icon.png" alt="question icon" height="auto" width="auto" style="width: 80%;" />
               <span class="tooltiptext">Make sure that the image paths in the xml file is configured correctly (no spaces)</span>
-            </div> -->
+            </div>
           </div>
           <div class="form-actions" id="button-submit">
             <button class="button-convert">Convert and download</button>
