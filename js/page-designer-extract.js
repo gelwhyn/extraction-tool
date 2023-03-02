@@ -276,6 +276,7 @@ function getImagePaths(filteredFile) {
 
 async function fetchImage(imageURL, imagePath) {
   const myHeaders = new Headers();
+  // myHeaders.set("Referrer-Policy", "no-referrer-when-downgrade")
   // myHeaders.append('Origin', 'http://localhost');
   // myHeaders.append('Access-Control-Allow-Origin', 'https://edge.disstg.commercecloud.salesforce.com/');
   // myHeaders.append('Access-Control-Allow-Methods', '*');
@@ -308,6 +309,8 @@ async function fetchImage(imageURL, imagePath) {
   return await fetch(imageURL, {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
+    cache: "force-cache",
+    pragma: "no-cache",
     mode: 'cors',
     method: "get",
    headers: myHeaders

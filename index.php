@@ -1,10 +1,13 @@
 <?php
- header("Access-Control-Allow-Origin: https://edge.disstg.commercecloud.salesforce.com/");
+//  header("Access-Control-Allow-Origin: https://edge.disstg.commercecloud.salesforce.com/");
+ header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PATCH, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Origin, Content-Type, X-Auth-Token');
 //  header("Access-Control-Request-Method: POST, GET, OPTIONS");
 // //  header("Content-Type: application/json");
 //  header("Access-Control-Allow-Headers: Authorization, Content-Type");
 
-header("Access-Control-Allow-Headers: GET");
+// header("Access-Control-Allow-Headers: GET");
 
 //shows na the config inside httpd.conf, htaccess, and other config files sa xampp is not working
 $headers = apache_request_headers();
