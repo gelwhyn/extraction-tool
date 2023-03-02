@@ -1,7 +1,0 @@
-<IfModule mod_headers.c>
-#Redirect "/extraction_tool/index.php" "/extraction_tool/sfcc_tools/Extract_Library_Folder/"
-RequestHeader set Access-Control-Allow-Origin "*"
-RequestHeader set Access-Control-Allow-Headers "*"
-#RequestHeader set Access-Control-Allow-Headers "X-PINGOTHER, Content-Type"
-#RequestHeader set Date "Wed, 21 Oct 2015 07:28:00 GMT"
-</IfModule>
