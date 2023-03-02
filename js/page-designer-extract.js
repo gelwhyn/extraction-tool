@@ -308,6 +308,7 @@ async function fetchImage(imageURL, imagePath) {
   return await fetch(imageURL, {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
+    mode: 'cors',
     method: "get",
    headers: myHeaders
   });
