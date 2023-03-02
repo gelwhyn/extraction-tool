@@ -1,0 +1,6 @@
+<IfModule mod_headers.c>
+#Redirect "/extraction_tool/index.php" "/extraction_tool/sfcc_tools/Extract_Library_Folder/"
+RequestHeader append MirrorID "mirror 12"
+RequestHeader append Access-Control-Allow-Origin "*"
+RequestHeader append Access-Control-Allow-Headers "*"
+</IfModule>

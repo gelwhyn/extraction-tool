@@ -1,24 +1,71 @@
 <?php
+ header("Access-Control-Allow-Origin: https://edge.disstg.commercecloud.salesforce.com/");
+//  header("Access-Control-Request-Method: POST, GET, OPTIONS");
+// //  header("Content-Type: application/json");
+//  header("Access-Control-Allow-Headers: Authorization, Content-Type");
+
+header("Access-Control-Allow-Headers: GET");
+
+//shows na the config inside httpd.conf, htaccess, and other config files sa xampp is not working
+$headers = apache_request_headers();
+if ($headers){
+    echo $headers['Accept-Language']; //displays yung host
+    // echo $headers['Access-Control-Allow-Origin']; //displays warning, undefined key
+
+}
+foreach ($headers as $header => $value) {
+   echo "$header: $value <br />\n";
+}
+
+ $sample = getallheaders();
+//  print_r($sample);
+//  for ($x = 0; $x <= count($sample); $x++) {
+//   echo $sample[$x];
+// }
+ ?>
+ <?php
+// var_dump(headers_list());
+// echo "yooo";
+// var_dump(headers_sent());
+// if ($_SERVER["REQUEST_METHOD"] == "GET") {
+//   var_dump(getallheaders());
+// }else{
+//   echo $_SERVER["REQUEST_METHOD"];
+// }
+
+?>
+<?php
+if(isset($_POST['baseURL']) || isset($_GET['baseURL']) || isset($_REQUEST['baseURL'])){
+ //do some staff
+ $headers = apache_request_headers();
+foreach ($headers as $header => $value) {
+  echo "$header: $value <br />\n";
+}
+
+}
+?>
+<?php
     // Allow from any origin
-    if (isset($_SERVER['HTTP_ORIGIN'])) {
-        header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-        header('Access-Control-Allow-Credentials: true');
-        header('Access-Control-Max-Age: 86400');    // cache for 1 day
-        echo "cors";
-    }
+    // if (isset($_SERVER['HTTP_ORIGIN'])) {
+    //     header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
+    //     header('Access-Control-Allow-Credentials: true');
+    //     header('Access-Control-Max-Age: 86400');    // cache for 1 day
+    //     echo "cors";
+    // }
 
-    // Access-Control headers are received during OPTIONS requests
-    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
-            header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
+    // // Access-Control headers are received during OPTIONS requests
+    // if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    //     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD']))
+    //         header("Access-Control-Allow-Methods: GET, POST, OPTIONS");         
 
-        if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
-            header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
+    //     if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']))
+    //         header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
 
-        exit(0);
-    }
-
-    header('Access-Control-Allow-Origin: *');
+    //     exit(0);
+    // }
+    $sample = getallheaders();
+    // var_dump($sample);
+    // header('Access-Control-Allow-Origin: *');
   // header('Content-type: application/json');
 
     // echo "You have CORS!";
@@ -146,5 +193,10 @@ session_start();
         <script src="js/dtw-preloading.js"></script>
         <script type="module" src="js/jszip.js"></script>
         <script type="module" src="js/filesaver.js"></script>
+        <script src="node_modules/sample.js"></script>
+
+        <!-- <script type="module">
+          import cors from 'node_modules/cors/lib/index.js';
+        </script> -->
   </body>
 </html>
