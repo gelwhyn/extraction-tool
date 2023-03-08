@@ -251,11 +251,22 @@ function getImagePaths(filteredFile) {
   return []
 }
 
-async function fetchImage(imageURL) {
+async function fetchImage(imageURL, imagePath) {
+  const myHeaders = new Headers();
+  // myHeaders.set("Referrer-Policy", "no-referrer-when-downgrade")
+  // myHeaders.append('Origin', 'http://localhost');
+  // myHeaders.append('Access-Control-Allow-Origin', 'https://edge.disstg.commercecloud.salesforce.com/');
+  // myHeaders.append('Access-Control-Allow-Origin', '*');
+  // myHeaders.append('Access-Control-Allow-Methods', '*');
+  // myHeaders.append('Access-Control-Allow-Headers', '*')
+
   return await fetch(imageURL, {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
+    pragma: "no-cache",
+    mode: 'cors',
     method: "get",
+   headers: myHeaders
   });
 }
 
@@ -289,8 +300,9 @@ async function getImageAssets(imagePaths, xmlFilename) {
       }
 
       const fetchResponse = fetchImage(
-        imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL
+        imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL, imgURL
       ).then(async (response) => {
+        console.log(response.headers(), "herelll")
         if (response.status == 200) {
           const imageBlob = await response.blob();
           const path = imgURL.substring(0, imgURL.lastIndexOf("/"));
@@ -344,6 +356,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
       });
     });
   } catch (error) {
+    console.log(error.headers(), "jjj")
     addMessage(
       `Images cannot be downloaded. Please verify your base URL link.`,
       "error"
