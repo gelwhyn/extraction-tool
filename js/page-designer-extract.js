@@ -1,26 +1,3 @@
-//cannot use import outside a module (tried adding the type: module in the package.json, not working)
-// import express from 'express';
-// import cors from 'cors';
-
-//not working
-// var express = require('express')
-// var cors = require('cors')
-
-// var app = express()
- 
-// app.use(cors({
-//   origin: '*',
-//   methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-// }));
- 
-// app.get('/products/:id', function (req, res, next) {
-//   res.json({msg: 'This is CORS-enabled for all origins!'})
-// })
- 
-// app.listen(80, function () {
-//   console.log('CORS-enabled web server listening on port 80')
-// })
-
 const inputElement = document.getElementById("library-input");
 const form = document.getElementById("form-pd");
 const checkBox = document.getElementById("checkbox-input");
@@ -279,37 +256,13 @@ async function fetchImage(imageURL, imagePath) {
   // myHeaders.set("Referrer-Policy", "no-referrer-when-downgrade")
   // myHeaders.append('Origin', 'http://localhost');
   // myHeaders.append('Access-Control-Allow-Origin', 'https://edge.disstg.commercecloud.salesforce.com/');
+  // myHeaders.append('Access-Control-Allow-Origin', '*');
   // myHeaders.append('Access-Control-Allow-Methods', '*');
-  // myHeaders.append('Access-Control-Allow-Headers', 'Origin, Authorization, Methods, Content-Type, X-Auth-Token');
+  // myHeaders.append('Access-Control-Allow-Headers', '*')
 
-  // myHeaders.append('authority', 'http://localhost');
-  // myHeaders.append('method', 'GET');
-  // myHeaders.append('scheme', 'https');
-  // myHeaders.append('origin', 'http://localhost');
-  // myHeaders.append('accept', '*/*');
-  // myHeaders.append('cache-control', 'no-cache');
-  // myHeaders.append('pragma', 'no-cache');
-  // myHeaders.append('accept-language', 'en-US,en;q=0.9');
-
-
-  //cannot be set manually/overridden, secure headers daw yung may sec-
-  // myHeaders.append('Sec-Fetch-Mode', 'cors');
-  // myHeaders.append('Sec-Fetch-Site', 'cross-site');
-  // myHeaders.append('Sec-Fetch-Dest', 'empty');
-
-  // console.log("here: ", myHeaders['authority'])
-  // myHeaders.append('accept', '*/*');
-  // myHeaders.append('accept', '*/*');
-
-
-
-  // myHeaders.append('Content-Type', 'application/json');
-
-  // // console.log(myHeaders.get('Access-Control-Allow-Origin'))
   return await fetch(imageURL, {
     //uncomment mode to try with no-cors
     // mode: 'no-cors',
-    cache: "force-cache",
     pragma: "no-cache",
     mode: 'cors',
     method: "get",
@@ -349,6 +302,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
       const fetchResponse = fetchImage(
         imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL, imgURL
       ).then(async (response) => {
+        console.log(response.headers(), "herelll")
         if (response.status == 200) {
           const imageBlob = await response.blob();
           const path = imgURL.substring(0, imgURL.lastIndexOf("/"));
@@ -402,6 +356,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
       });
     });
   } catch (error) {
+    console.log(error.headers(), "jjj")
     addMessage(
       `Images cannot be downloaded. Please verify your base URL link.`,
       "error"
