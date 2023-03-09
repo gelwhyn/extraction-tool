@@ -84,6 +84,20 @@ session_start();
               placeholder="keyIngredients, attribute2, attribute3"
             ></textarea>
           </div>
+          <div>
+            <!-- <label for="baseurl-input">Base URL</label> -->
+            <input type="text" name="baseURL" id="baseurl-input" placeholder="Base URL Link" style="display:none;">
+          </div>
+          <div>
+            <input type="checkbox" id="checkbox-input" name="isDownload" />
+            <label for="checkbox-input">
+              Download Images in the XML?
+            </label>
+            <div class="tooltip">
+              <img loading="lazy" src="img/question-icon.png" alt="question icon" height="auto" width="auto" style="width: 80%;" />
+              <span class="tooltiptext">Make sure that the image paths in the xml file is configured correctly (no spaces)</span>
+            </div>
+          </div>
           <div class="form-actions" id="button-submit">
             <button class="button-convert">Convert and download</button>
           </div>
@@ -117,6 +131,7 @@ session_start();
     <!-- END OF BACK GROUND-->
     <script src="js/library-spcfc-attrb.js"></script>
     <script src="js/dtw-preloading.js"></script>
-    
+    <script type="module" src="js/jszip.js"></script>
+    <script type="module" src="js/filesaver.js"></script>
   </body>
 </html>
