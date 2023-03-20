@@ -21,6 +21,8 @@ checkBox.addEventListener(
 
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
+  document.getElementById("logs").innerHTML = "";
+
   event.preventDefault();
   let isDownloadImagesChecked =
     document.getElementById("checkbox-input").checked;
@@ -142,7 +144,6 @@ function getPDAssets(pageIDs, xml, fileName, isDownloadImagesChecked) {
   if (pageFound) {
     if (isDownloadImagesChecked) {
       let images = getImagePaths(library.outerHTML);
-      console.log(images, "image here")
       if (images.length == 0) {
         addMessage("No image path found in filtered XML File.", "error");
         document.getElementById("app").classList.remove("loading");
@@ -262,10 +263,28 @@ async function fetchImage(imageURL, imagePath) {
   });
 }
 
+function createLog(messages){
+  const logFile = new Blob(messages, {type: "text/plain;charset=utf=8"})
+  const logURL = URL.createObjectURL(logFile)
+  var element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    logURL
+  );
+  element.setAttribute("id", "downloadLog");
+  element.setAttribute("download", "log.txt");
+  element.setAttribute("target", "_blank");
+
+  element.innerHTML = "Download Log File Here"
+
+  document.getElementById("logs").appendChild(element);
+}
+
 async function getImageAssets(imagePaths, xmlFilename) {
   // console.log(imagePaths, "paths reals");
   let count = 0;
   let countImageFailedFetch = 0;
+  let logMessages = ["Failed Image Download Logs\n", "--------------------------\n\n"]
 
   let zip = new JSZip();
   let zipFilename = `images_${xmlFilename}.zip`;
@@ -312,8 +331,11 @@ async function getImageAssets(imagePaths, xmlFilename) {
           count++;
         } else {
           //count how many images that can't be downloaded
+          const imageLink = imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL
           countImageFailedFetch++;
+          logMessages.push(`Image with filename: "${filename}" cannot be downloaded. Please make sure that this link: ${imageLink} is accessible\n`)
           //uncomment here if error message should be printed for each file that cannot be downloaded
+          //add yung filename here sa list + the link "Make sure this link is accessible"
           // addMessage(
           //   `Image "${filename}" is not found. Skipping..`,
           //   "warning"
@@ -336,18 +358,20 @@ async function getImageAssets(imagePaths, xmlFilename) {
             );
             if (countImageFailedFetch > 0) {
               //comment this if displaying warning messages for each file (that cannot be downloaded) is better
+              //call function to create the log file
+              createLog(logMessages)
+              // document.getElementById("downloadLog").addEventListener("click", createLog(logMessages), false);
               addMessage(
                 `An error occured. Failed to download ${countImageFailedFetch} images.`,
                 "warning"
               );
             }
+            document.getElementById("app").classList.remove("loading");
           });
         }
-        document.getElementById("app").classList.remove("loading");
       });
     });
   } catch (error) {
-    console.log(error.headers(), "jjj")
     addMessage(
       `Images cannot be downloaded. Please verify your base URL link.`,
       "error"

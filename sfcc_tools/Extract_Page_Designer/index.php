@@ -64,7 +64,9 @@ session_start();
           </div>
           <div>
             <label for="pageids-textarea">Page Designer Page IDs (comma separated values)</label>
-            <textarea name="pageids" id="pageids-textarea" placeholder="page1-id, page2-id, page3-id" required>lip-maestro-satin</textarea>
+            <textarea name="pageids" id="pageids-textarea" placeholder="page1-id, page2-id, page3-id" required>
+            lip-maestro-satin, 328140a053cf38614c1eab3d35, lip-maestro-mediterranea-lp, 130b79578ab8b6bd104b660043, prive-fndr-a1-ing, 520-lp, 9-14_backup_homepage-emj-test, ArmaniCodeFortnite-lp, 063a769f19882a453ebace7ee1, 17fb536acfcc0af420e82c5f44, 80eaa1c282e221876465e7615f, 108aee91e51a97bd1baa67131b
+            </textarea>
           </div>
           <div>
             <!-- <label for="baseurl-input">Base URL</label> -->
@@ -82,6 +84,7 @@ session_start();
             <button class="button-convert">Convert and download</button>
           </div>
         </form>
+        <div id="logs"></div>
         <div class="loading-container">
           <div class="loadingspinner"></div>
         </div>

@@ -86,6 +86,7 @@ session_start();
             <button class="button-convert">Convert and download</button>
           </div>
         </form>
+        <div id="logs"></div>
         <div class="loading-container">
           <div class="loadingspinner"></div>
         </div>

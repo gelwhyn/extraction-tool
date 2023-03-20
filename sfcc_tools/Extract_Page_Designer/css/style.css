@@ -253,6 +253,29 @@ h1 {
   margin: 10px 10px 10px 0;
 }
 
+#downloadLog{
+  background-color: #3b94b0;
+  color: white;
+  display: block;
+  font-size: 16px;
+  padding: 10px 20px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 10px 10px 10px 10px;
+  cursor: pointer;
+  border-width: 2px;
+  border-style: outset;
+  border-color: buttonborder;
+  border-image: initial;
+  text-decoration: none;
+  text-align: center;
+  margin-top: 5px;
+}
+
+#downloadLog:hover{
+  background-color: #0588b1;
+}
+
 #app {
   max-width: 100%;
   margin: 0 auto;
@@ -292,7 +315,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:hover{
   background-color: #0588b1;
 }
 
