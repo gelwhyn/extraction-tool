@@ -22,6 +22,7 @@ checkBox.addEventListener(
 
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
+  document.getElementById("logs").innerH
   event.preventDefault();
   let isDownloadImagesChecked =
   document.getElementById("checkbox-input").checked;
@@ -350,10 +351,28 @@ async function fetchImage(imageURL) {
   });
 }
 
+function createLog(messages){
+  const logFile = new Blob(messages, {type: "text/plain;charset=utf=8"})
+  const logURL = URL.createObjectURL(logFile)
+  var element = document.createElement("a");
+  element.setAttribute(
+    "href",
+    logURL
+  );
+  element.setAttribute("id", "downloadLog");
+  element.setAttribute("download", "log.txt");
+  element.setAttribute("target", "_blank");
+
+  element.innerHTML = "Download Log File Here"
+
+  document.getElementById("logs").appendChild(element);
+}
+
 async function getImageAssets(imagePaths, xmlFilename) {
   // console.log(imagePaths, "paths reals");
   let count = 0;
   let countImageFailedFetch = 0;
+  let logMessages = ["Failed Image Download Logs\n", "--------------------------\n\n"]
 
   let zip = new JSZip();
   let zipFilename = `images_${xmlFilename}.zip`;
@@ -400,7 +419,9 @@ async function getImageAssets(imagePaths, xmlFilename) {
           count++;
         } else {
           //count how many images that can't be downloaded
+          const imageLink = imgURL.startsWith("https://") || imgURL.startsWith("http://") ? imgURL : baseURL + imgURL
           countImageFailedFetch++;
+          logMessages.push(`Image with filename: "${filename}" cannot be downloaded. Please make sure that this link: ${imageLink} is accessible\n`)
           //uncomment here if error message should be printed for each file that cannot be downloaded
           // addMessage(
           //   `Image "${filename}" is not found. Skipping..`,
@@ -425,6 +446,8 @@ async function getImageAssets(imagePaths, xmlFilename) {
             );
             if (countImageFailedFetch > 0) {
               //comment this if displaying warning messages for each file (that cannot be downloaded) is better
+              //call function to create the log file
+              createLog(logMessages)
               addMessage(
                 `An error occured. Failed to download ${countImageFailedFetch} images.`,
                 "warning"
