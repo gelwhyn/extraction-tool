@@ -392,6 +392,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
             `Images cannot be downloaded. Please verify your base URL link.`,
             "error"
           );
+          document.getElementById("app").classList.remove("loading");
         } else if (
           count != 0 &&
           count + countImageFailedFetch == imagePaths.length
