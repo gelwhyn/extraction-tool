@@ -71,7 +71,7 @@ session_start();
               id="pageids-textarea"
               placeholder="prod1, prod2, prod3"
               required
-            >ww-00343-arm</textarea>
+            ></textarea>
           </div>
           <div>
             <!-- <label for="baseurl-input">Base URL</label> -->
