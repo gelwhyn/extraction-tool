@@ -22,7 +22,7 @@ checkBox.addEventListener(
 
 function handleUploadedFile(event) {
   document.getElementById("info-messages").innerHTML = "";
-  document.getElementById("logs").innerH
+  document.getElementById("logs").innerHTML = "";
   event.preventDefault();
   let isDownloadImagesChecked =
   document.getElementById("checkbox-input").checked;
