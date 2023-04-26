@@ -330,6 +330,7 @@ async function getImageAssets(imagePaths, xmlFilename) {
   // console.log(imagePaths, "paths reals");
   let count = 0;
   let countImageFailedFetch = 0;
+  let counterCORSDisabled = 0;
   let logMessages = ["Failed Image Download Logs\n", "--------------------------\n\n"]
 
 
@@ -415,12 +416,19 @@ async function getImageAssets(imagePaths, xmlFilename) {
             document.getElementById("app").classList.remove("loading");
           });
         }
+      }).catch(() => {
+        //can be removed if cors issue is fixed
+        counterCORSDisabled++;
+        if(counterCORSDisabled === imagePaths.length){
+          document.getElementById("app").classList.remove("loading");
+          addMessage(
+            `Images cannot be downloaded. Make sure that the CORS Extension is enabled.`,
+            "error"
+          );
+        }
       });
     });
   } catch (error) {
-    addMessage(
-      `Images cannot be downloaded. Please verify your base URL link.`,
-      "error"
-    );
+    console.log(error)
   }
 }
